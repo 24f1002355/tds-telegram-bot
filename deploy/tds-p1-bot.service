@@ -1,0 +1,18 @@
+[Unit]
+Description=TDS P1 Data Analyst Telegram Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/opt/tds-p1-telegram-bot
+EnvironmentFile=/opt/tds-p1-telegram-bot/.env
+ExecStart=/opt/tds-p1-telegram-bot/venv/bin/python -m bot.main
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
