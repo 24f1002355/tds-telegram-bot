@@ -9,8 +9,8 @@ wrapped around it.
 
 The actual grading harness is public:
 [Jivraj-18/tds-p1-t2-2026-telegram-bot](https://github.com/Jivraj-18/tds-p1-t2-2026-telegram-bot).
-Its code (`collect.py` + `grade.py`) exact-matches your entire reply against
-a value computed *before* your bot runs, with no way to know your dynamic
+Its code (`collect.py` + `grade.py`) exact-matches the entire reply against
+a value computed *before* the bot runs, with no way to know the dynamic
 `log_url` in advance - which means a reply containing `log_url` structurally
 cannot pass that specific exact-match check, regardless of the value.
 
@@ -63,12 +63,12 @@ always-on VM", not a web service.
    project submission).
 3. Save the token it gives you — that's `TELEGRAM_BOT_TOKEN`.
 
-## 2. Get your keys
+## 2. Get the keys
 
 - **Gemini**: an API key from Google AI Studio (same one you've used
   elsewhere in the course). Used via Gemini's OpenAI-compatible endpoint,
   so no extra SDK plumbing is needed.
-- **AIPipe** (fallback only, optional but recommended): your AIPipe token,
+- **AIPipe** (fallback only, optional but recommended): the AIPipe token,
   used only if the Gemini call errors out (quota/rate limit).
 - **GCS bucket**: reuse the bucket you already created and made public in
   the Q3/Q4 tasks. If you want a dedicated one for logs, create it the same
@@ -87,28 +87,28 @@ python -m bot.main
 
 (`.env` is loaded automatically via `python-dotenv` — no separate export step needed.)
 
-Message your bot on Telegram directly to sanity-check it before wiring up
+Message the bot on Telegram directly to sanity-check it before wiring up
 the grading harness. Then clone the public grading repo
-(`tds-p1-t2-2026-telegram-bot`), point it at your bot username, and add a
-few of your own questions to `evals/questions.json` to test against
+(`tds-p1-t2-2026-telegram-bot`), point it at the bot username, and add a
+few of the own questions to `evals/questions.json` to test against
 realistic MOSPI-style prompts, including a multi-turn one, before you rely
 on the shape of the official questions.
 
 ## 4. Set up a GCS service account key (needed once, off-GCP)
 
 Since the bot isn't running on a GCE VM (no built-in service account to lean
-on), create a dedicated key so it can write logs to your bucket:
+on), create a dedicated key so it can write logs to the bucket:
 
 ```bash
 gcloud iam service-accounts create tds-bot-uploader \
   --display-name="TDS P1 bot log uploader"
 
-gcloud storage buckets add-iam-policy-binding gs://<your-bucket> \
-  --member="serviceAccount:tds-bot-uploader@<your-project>.iam.gserviceaccount.com" \
+gcloud storage buckets add-iam-policy-binding gs://<the-bucket> \
+  --member="serviceAccount:tds-bot-uploader@<the-project>.iam.gserviceaccount.com" \
   --role="roles/storage.objectAdmin"
 
 gcloud iam service-accounts keys create key.json \
-  --iam-account=tds-bot-uploader@<your-project>.iam.gserviceaccount.com
+  --iam-account=tds-bot-uploader@<the-project>.iam.gserviceaccount.com
 
 base64 -w0 key.json   # copy this whole output — it's GOOGLE_APPLICATION_CREDENTIALS_JSON
 ```
@@ -116,11 +116,6 @@ base64 -w0 key.json   # copy this whole output — it's GOOGLE_APPLICATION_CREDE
 Delete `key.json` locally once it's copied — you don't need the file, just
 the base64 string, and it shouldn't sit around unencrypted.
 
-## 5. Deploy on Fly.io (separate from your WordPress VM entirely)
-
-Since the bot only long-polls Telegram — no inbound HTTP to serve — it runs
-as a plain background worker, not a web service, so it never touches
-whatever's already running on your existing box.
 
 ```bash
 curl -L https://fly.io/install.sh | sh   # installs flyctl
@@ -152,7 +147,7 @@ VM work the same way — same `Dockerfile`/`requirements.txt`, same env vars.
 
 Submit, comma-separated:
 - this repo's public GitHub URL
-- your bot's `@username`
+- the bot's `@username`
 
 Keep the Fly.io machine running until grading completes — it restarts
 automatically on crashes, but won't survive being explicitly stopped
@@ -167,7 +162,7 @@ automatically on crashes, but won't survive being explicitly stopped
 - `run_python` sandboxing blocks the dangerous builtins (`open`, `__import__`,
   etc.) and runs in a separate process with a timeout, but it is scoped to
   "don't let a wayward LLM step do something silly", not "safe against a
-  hostile user" — the only caller is your own agent reacting to the
+  hostile user" — the only caller is the own agent reacting to the
   official grading account.
 - Conversation memory is in-process and resets if the bot restarts, and
   expires after `CONVERSATION_TTL_SECONDS` of chat inactivity — fine for the
